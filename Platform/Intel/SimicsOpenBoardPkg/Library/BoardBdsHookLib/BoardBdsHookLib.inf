@@ -49,6 +49,7 @@
   DxeLoadLinuxLib
   UefiLib
   LogoLib
+  SerialPortLib
 
 [Pcd]
   gSimicsOpenBoardPkgTokenSpaceGuid.PcdEmuVariableEvent

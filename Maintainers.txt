@@ -91,6 +91,11 @@ F: Silicon/AMD/Styx/
 M: Ard Biesheuvel <ardb+tianocore@kernel.org>
 M: Leif Lindholm <quic_llindhol@quicinc.com>
 
+AMD MinBoard package for MinPlatformPkg
+F: Platform/AMD/AmdMinBoardPkg
+M: Abner Chang <abner.chang@amd.com>
+M: Abdul Lateef Attar <abdattar@amd.com>
+
 Ampere Computing
 F: Platform/Ampere
 F: Silicon/Ampere
@@ -163,6 +168,13 @@ Features/Intel/UserInterface
 F: Features/Intel/UserInterface/
 M: Dandan Bi <dandan.bi@intel.com>
 R: Liming Gao <gaoliming@byosoft.com.cn>
+
+Features/ManageabilityPkg
+F: Features/ManageabilityPkg/
+M: Abner Chang <abner.chang@amd.com>
+M: Isaac Oram <isaac.w.oram@intel.com>
+R: Abdul Lateef Attar <AbdulLateef.Attar@amd.com>
+R: Nickle Wang <nicklew@nvidia.com>
 
 Platform/Intel
 F: Platform/Intel/
@@ -361,7 +373,7 @@ F: Platform/Qemu/SbsaQemu/
 F: Silicon/Qemu/SbsaQemu/
 M: Ard Biesheuvel <ardb+tianocore@kernel.org>
 M: Leif Lindholm <quic_llindhol@quicinc.com>
-R: Graeme Gregory <quic_ggregory@quicinc.com>
+R: Graeme Gregory <graeme@xora.org.uk>
 R: Radoslaw Biernacki <rad@semihalf.com>
 
 Raspberry Pi platforms and silicon

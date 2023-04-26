@@ -28,9 +28,16 @@ Ext4GetUcs2DirentName (
 {
   CHAR8       Utf8NameBuf[EXT4_NAME_MAX + 1];
   UINT16      *Str;
+  UINT8       Index;
   EFI_STATUS  Status;
 
-  CopyMem (Utf8NameBuf, Entry->name, Entry->name_len);
+  for (Index = 0; Index < Entry->name_len; ++Index) {
+    if (Entry->name[Index] == '\0') {
+      return EFI_INVALID_PARAMETER;
+    }
+
+    Utf8NameBuf[Index] = Entry->name[Index];
+  }
 
   Utf8NameBuf[Entry->name_len] = '\0';
 
@@ -113,8 +120,7 @@ Ext4RetrieveDirent (
   UINTN           ToCopy;
   UINTN           BlockOffset;
 
-  Status = EFI_NOT_FOUND;
-  Buf    = AllocatePool (Partition->BlockSize);
+  Buf = AllocatePool (Partition->BlockSize);
 
   if (Buf == NULL) {
     return EFI_OUT_OF_RESOURCES;
@@ -128,7 +134,8 @@ Ext4RetrieveDirent (
   DivU64x32Remainder (DirInoSize, Partition->BlockSize, &BlockRemainder);
   if (BlockRemainder != 0) {
     // Directory inodes need to have block aligned sizes
-    return EFI_VOLUME_CORRUPTED;
+    Status = EFI_VOLUME_CORRUPTED;
+    goto Out;
   }
 
   while (Off < DirInoSize) {
@@ -137,8 +144,7 @@ Ext4RetrieveDirent (
     Status = Ext4Read (Partition, Directory, Buf, Off, &Length);
 
     if (Status != EFI_SUCCESS) {
-      FreePool (Buf);
-      return Status;
+      goto Out;
     }
 
     for (BlockOffset = 0; BlockOffset < Partition->BlockSize; ) {
@@ -146,19 +152,19 @@ Ext4RetrieveDirent (
       RemainingBlock = Partition->BlockSize - BlockOffset;
       // Check if the minimum directory entry fits inside [BlockOffset, EndOfBlock]
       if (RemainingBlock < EXT4_MIN_DIR_ENTRY_LEN) {
-        FreePool (Buf);
-        return EFI_VOLUME_CORRUPTED;
+        Status = EFI_VOLUME_CORRUPTED;
+        goto Out;
       }
 
       if (!Ext4ValidDirent (Entry)) {
-        FreePool (Buf);
-        return EFI_VOLUME_CORRUPTED;
+        Status = EFI_VOLUME_CORRUPTED;
+        goto Out;
       }
 
       if ((Entry->name_len > RemainingBlock) || (Entry->rec_len > RemainingBlock)) {
         // Corrupted filesystem
-        FreePool (Buf);
-        return EFI_VOLUME_CORRUPTED;
+        Status = EFI_VOLUME_CORRUPTED;
+        goto Out;
       }
 
       // Unused entry
@@ -193,8 +199,8 @@ Ext4RetrieveDirent (
         ToCopy = MIN (Entry->rec_len, sizeof (EXT4_DIR_ENTRY));
 
         CopyMem (Result, Entry, ToCopy);
-        FreePool (Buf);
-        return EFI_SUCCESS;
+        Status = EFI_SUCCESS;
+        goto Out;
       }
 
       BlockOffset += Entry->rec_len;
@@ -203,8 +209,11 @@ Ext4RetrieveDirent (
     Off += Partition->BlockSize;
   }
 
+  Status = EFI_NOT_FOUND;
+
+Out:
   FreePool (Buf);
-  return EFI_NOT_FOUND;
+  return Status;
 }
 
 /**
@@ -265,7 +274,8 @@ Ext4OpenDirent (
   } else {
     File->Dentry = Ext4CreateDentry (FileName, Directory->Dentry);
 
-    if (!File->Dentry) {
+    if (File->Dentry == NULL) {
+      Status = EFI_OUT_OF_RESOURCES;
       goto Error;
     }
   }

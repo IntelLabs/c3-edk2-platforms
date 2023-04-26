@@ -220,13 +220,11 @@ Ext4OpenSuperblock (
   }
 
   // At the time of writing, it's the only supported checksum.
-  if (Partition->FeaturesCompat & EXT4_FEATURE_RO_COMPAT_METADATA_CSUM &&
-      (Sb->s_checksum_type != EXT4_CHECKSUM_CRC32C))
-  {
+  if (EXT4_HAS_METADATA_CSUM (Partition) && (Sb->s_checksum_type != EXT4_CHECKSUM_CRC32C)) {
     return EFI_UNSUPPORTED;
   }
 
-  if ((Partition->FeaturesIncompat & EXT4_FEATURE_INCOMPAT_CSUM_SEED) != 0) {
+  if (EXT4_HAS_INCOMPAT (Partition, EXT4_FEATURE_INCOMPAT_CSUM_SEED)) {
     Partition->InitialSeed = Sb->s_checksum_seed;
   } else {
     Partition->InitialSeed = Ext4CalculateChecksum (Partition, Sb->s_uuid, 16, ~0U);
@@ -244,6 +242,16 @@ Ext4OpenSuperblock (
   (VOID)gSupportedCompatFeat;
 
   DEBUG ((DEBUG_FS, "Read only = %u\n", Partition->ReadOnly));
+
+  if (Sb->s_inodes_per_group == 0) {
+    DEBUG ((DEBUG_ERROR, "[ext4] Inodes per group can not be zero\n"));
+    return EFI_VOLUME_CORRUPTED;
+  }
+
+  if (Sb->s_log_block_size > EXT4_LOG_BLOCK_SIZE_MAX) {
+    DEBUG ((DEBUG_ERROR, "[ext4] SuperBlock s_log_block_size %lu is too big\n", Sb->s_log_block_size));
+    return EFI_UNSUPPORTED;
+  }
 
   Partition->BlockSize = (UINT32)LShiftU64 (1024, Sb->s_log_block_size);
 

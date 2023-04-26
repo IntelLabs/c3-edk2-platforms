@@ -1,7 +1,7 @@
 /** @file
   Contains root level name space objects for the platform
 
-  Copyright (c) 2019 Intel Corporation. All rights reserved. <BR>
+  Copyright (c) 2019 - 2023 Intel Corporation. All rights reserved. <BR>
 
   SPDX-License-Identifier: BSD-2-Clause-Patent
 **/

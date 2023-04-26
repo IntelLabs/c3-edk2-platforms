@@ -9,6 +9,8 @@
 #include "BoardBdsHook.h"
 #include <Guid/RootBridgesConnectedEventGroup.h>
 #include <Protocol/FirmwareVolume2.h>
+#include <Library/PrintLib.h>
+#include <Library/SerialPortLib.h>
 
 #define LEGACY_8259_MASK_REGISTER_MASTER                  0x21
 #define LEGACY_8259_MASK_REGISTER_SLAVE                   0xA1
@@ -789,7 +791,6 @@ DetectAndPreparePlatformPciDevicePath (
       return EFI_SUCCESS;
     }
   }
-
   //
   // Here we decide which display device to enable in PCI bus
   //
@@ -873,9 +874,9 @@ PlatformInitializeConsole (
     }
   } else {
     //
-    // Only detect VGA device and add them to ConOut
+    // Detect all so that we have serial and/or VGA
     //
-    DetectAndPreparePlatformPciDevicePaths (TRUE);
+    DetectAndPreparePlatformPciDevicePaths (FALSE);
   }
 }
 
@@ -1650,6 +1651,10 @@ BdsAfterConsoleReadyBeforeBootOptionCallback (
   EFI_BOOT_MODE                      BootMode;
 
   DEBUG ((DEBUG_INFO, "%a called\n", __FUNCTION__));
+
+  CHAR8  Buffer[42];
+  AsciiSPrint (Buffer, sizeof (Buffer), "Press ESC to enter BIOS menu\n");
+  SerialPortWrite ((UINT8 *)Buffer, AsciiStrLen (Buffer));
 
   if (PcdGetBool (PcdOvmfFlashVariablesEnable)) {
     DEBUG ((DEBUG_INFO, "PlatformBdsPolicyBehavior: not restoring NvVars "
