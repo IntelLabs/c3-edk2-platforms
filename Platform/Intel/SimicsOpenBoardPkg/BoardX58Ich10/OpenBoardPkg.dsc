@@ -136,7 +136,7 @@
   #######################################
   PeiResourcePublicationLib|MdePkg/Library/PeiResourcePublicationLib/PeiResourcePublicationLib.inf
   MpInitLib|UefiCpuPkg/Library/MpInitLib/PeiMpInitLib.inf
-  CcExitLib|UefiCpuPkg/Library/CcExitLibNull/CcExitLibNull.inf
+  VmgExitLib|UefiCpuPkg/Library/VmgExitLibNull/VmgExitLibNull.inf
 
   #####################################
   # Silicon Package
